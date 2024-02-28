@@ -5,7 +5,7 @@
          <![CDATA[
          <UiScreen>
                <Operations>
-                  <Op type="Submit" action="./end.xml">
+                  <Op type="Submit" action="./list.xml">
                   </Op>
                </Operations>
                <IoScreen>

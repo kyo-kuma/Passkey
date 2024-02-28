@@ -26,6 +26,7 @@ class ScanDelegate(DefaultDelegate):
 
 # 特定のUUIDを持つデバイスを探す関数
 def scan_for_device(target_uuid):
+    count = 0
     scanner = Scanner().withDelegate(ScanDelegate())
     print(f"Scanning for UUID: {target_uuid}")
 
@@ -48,10 +49,15 @@ def scan_for_device(target_uuid):
                     print(f"  adtype = {adtype}")
                 print("")
                 return dev
+        count+=1
+        if count > 60:
+            return None 
 
 def await_advert(eid_key):
     target_uuid = '0000fff9-0000-1000-8000-00805f9b34fb'
     dev = scan_for_device(target_uuid)
+    if dev is None:
+        return None
 
     for (adtype, desc, cable_data) in dev.getScanData():
         print(f"  {desc} = {cable_data}")
@@ -120,7 +126,10 @@ def await_qr_advert(qr_secret):
     return await_advert(eid_key)
 
 def advertise(qr_secret):
-    return await_qr_advert(qr_secret).hex()
+    res = await_qr_advert(qr_secret)
+    if res is None:
+        return None
+    return res.hex()
 
 #qr_secret = load_qr_secret("qr_secret.bin")
 #print(f"qr_secret: {qr_secret.hex()}")
