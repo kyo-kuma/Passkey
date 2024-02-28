@@ -6,6 +6,7 @@ import json
 import cbor2
 import hmac
 import requests
+import struct
 
 from typing import Tuple
 from noise_lib import Noise
@@ -26,17 +27,17 @@ tunnel_server_domain = ""
 subprotocol = "fido.cable"
 
 def load_identity_key_and_qr_secret_and_advert_plaintxt(identity_key_path, qr_secret_path, advert_plaintxt_path):
-    with open(identity_key_path, "rb") as key_file:
+    with open("tmp/" + identity_key_path, "rb") as key_file:
         identity_key = serialization.load_pem_private_key(
             key_file.read(),
             password=None,
             backend=None
         )
 
-    with open(qr_secret_path, "rb") as secret_file:
+    with open("tmp/" + qr_secret_path, "rb") as secret_file:
         qr_secret = secret_file.read()
 
-    with open(advert_plaintxt_path, "r") as plain_file:
+    with open("tmp/" + advert_plaintxt_path, "r") as plain_file:
         advert_plaintxt = plain_file.read()
 
     return identity_key, qr_secret, advert_plaintxt
@@ -303,23 +304,29 @@ def parse_update_message(payload, handshake_hash):
 
     linking_data = msg[1]
     initial_link_data = {
-        'contact_id': linking_data[1],
-        'link_id': linking_data[2],
-        'link_secret': linking_data[3],
-        'authenticator_public_key': linking_data[4],
-        'authenticator_name': linking_data[5],
-        'signature': linking_data[6],
+        'ContactId': linking_data[1],
+        'LinkId': linking_data[2],
+        'LinkSecret': linking_data[3],
+        'authenticatorPublicKey': linking_data[4],
+        'AuthenticatorName': linking_data[5],
+        'Signature': linking_data[6],
     }
     print("initial_link_data")
     print(initial_link_data)
 
-    pub_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), initial_link_data['authenticator_public_key'])
+    pub_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), initial_link_data['authenticatorPublicKey'])
 
-    if not verify_signature(initial_link_data['signature'], handshake_hash, pub_key):
+    if not verify_signature(initial_link_data['Signature'], handshake_hash, pub_key):
         raise Exception("Invalid link signature")
 
-    initial_link_data['tunnel_server_domain'] = tunnel_server_domain
-    initial_link_data['auth_public_key'] = pub_key
+    initial_link_data['tunnelServerDomain'] = tunnel_server_domain
+    initial_link_data['authPublicKey'] = pub_key
+
+    with open("tmp/" + 'linkdata.bin', 'wb') as file:
+        file.write(payload)
+
+    with open("tmp/" + 'tunnel_server_domain.txt', 'w') as file:
+        file.write(tunnel_server_domain)
 
 
 def verify_signature(sig, handshake_hash, pub_key):
@@ -369,7 +376,7 @@ def send_ctap2_request(conn, handshake_hash):
 
         elif msg_type == TYPE_UPDATE:
             print("CTAP Update!!!") 
-            #parse_update_message(reply, handshake_hash)
+            parse_update_message(reply, handshake_hash)
 
         else:
             raise Exception("invalid message type received")

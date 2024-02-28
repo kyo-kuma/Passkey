@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SerioCommands version="1.0">
+	<DisplayInfo>
+		<Script>
+			<![CDATA[
+				<UiScreen>
+					<IoScreen>
+						<IoObject>
+							<Title>Completed!</Title>
+							<Description>Completed!!</Description>
+							<Message>Completed!!!</Message>
+						</IoObject>
+					</IoScreen>
+					<AutoTransition>2</AutoTransition>
+				</UiScreen>
+			]]>
+		</Script>
+	</DisplayInfo>
+</SerioCommands>
+

@@ -10,12 +10,12 @@ import threading
 from bluepy.btle import Scanner, DefaultDelegate
 
 def save_advert_plaintxt(advert_plaintxt, advert_plaintxt_path):
-    with open(advert_plaintxt_path, "w") as plain_file:
+    with open("tmp/" + advert_plaintxt_path, "w") as plain_file:
         plain_file.write(advert_plaintxt)
 
 def load_qr_secret(qr_secret_path):
     # QRシークレットをバイナリで読み込む
-    with open(qr_secret_path, "rb") as secret_file:
+    with open("tmp/" + qr_secret_path, "rb") as secret_file:
         qr_secret = secret_file.read()
 
     return qr_secret

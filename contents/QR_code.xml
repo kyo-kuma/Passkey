@@ -1,0 +1,18 @@
+<SerioCommands version="1.0">
+   <DisplayForm>
+      <Script>&lt;![CDATA[
+&lt;UiScreen&gt;
+               &lt;Operations&gt;
+                  &lt;Op type="Submit" action="./end.xml"&gt;
+                  &lt;/Op&gt;
+               &lt;/Operations&gt;
+               &lt;IoScreen&gt;
+                  &lt;IoObject&gt;
+                     &lt;Title&gt;QRCode Title&lt;/Title&gt;
+                     &lt;Img qrtext="https://example.com/new-url" qrvertion="40" qrclevel="H"&gt;Please Scan Code&lt;/Img&gt;
+                  &lt;/IoObject&gt;
+               &lt;/IoScreen&gt;
+            &lt;/UiScreen&gt;
+]]&gt;</Script>
+   </DisplayForm>
+</SerioCommands>

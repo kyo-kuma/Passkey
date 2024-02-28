@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SerioCommands version="1.0">
+   <DisplayForm>
+      <Script>
+         <![CDATA[
+         <UiScreen>
+               <Operations>
+                  <Op type="Submit" action="./end.xml">
+                  </Op>
+               </Operations>
+               <IoScreen>
+                  <IoObject>
+                     <Title>QRCode Title</Title>
+                     <Img qrtext="XXX" qrvertion="40" qrclevel="H">Please Scan Code</Img>
+                  </IoObject>
+               </IoScreen>
+            </UiScreen>
+         ]]>
+      </Script>
+   </DisplayForm>
+</SerioCommands>
+

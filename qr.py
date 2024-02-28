@@ -55,14 +55,15 @@ def digit_encode(d):
 
 def save_identity_key_and_qr_secret(identity_key, qr_secret, identity_key_path, qr_secret_path):
     # 秘密鍵をPEM形式で保存
-    with open(identity_key_path, "wb") as key_file:
+    os.makedirs("tmp", exist_ok=True)
+    with open("tmp/" + identity_key_path, "wb") as key_file:
         key_file.write(identity_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         ))
 
-    with open('public_key.pem', 'wb') as pem_out:
+    with open("tmp/" + 'public_key.pem', 'wb') as pem_out:
         # 公開鍵を取得
         public_key = identity_key.public_key()
         # 公開鍵をPEM形式でエンコード
@@ -74,7 +75,7 @@ def save_identity_key_and_qr_secret(identity_key, qr_secret, identity_key_path, 
         pem_out.write(pem_public_key)
 
     # QRシークレットをバイナリで保存
-    with open(qr_secret_path, "wb") as secret_file:
+    with open("tmp/" + qr_secret_path, "wb") as secret_file:
         secret_file.write(qr_secret)
 
 def encode_qr_contents(compressed_public_key, qr_secret):
@@ -91,7 +92,8 @@ def encode_qr_contents(compressed_public_key, qr_secret):
         2: 2,  # Placeholder for actual value
         3: int(time.time()),
         4: True,
-        5: 'mc',
+        #4: False,
+        5: 'ga',
     })
 
     # Add the extra key if needed
