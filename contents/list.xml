@@ -6,20 +6,13 @@
     <UiScreen>
       <Operations>
       <Op type="Submit" action="./print.xml" ></Op>
+      <Op type="Back" action="./QR.xml" ></Op>
     </Operations>
      <IoScreen>
       <IoObject>
        <Title>Select item(Single)</Title>
        <Selection id="selectid test" multiple="false" >
-        <Item selected="false" value="FirstItem">
-         <Label>First Item</Label>
-        </Item>
-        <Item selected="false" value="SecondItem">
-         <Label>Second Item</Label>
-        </Item>
-        <Item selected="false" value="ThirdItem">
-         <Label>Third Item</Label>
-        </Item>
+       %%ITEMS%%
        </Selection>
       </IoObject>
      </IoScreen>

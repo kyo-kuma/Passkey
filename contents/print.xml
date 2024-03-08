@@ -4,16 +4,17 @@
   <AuthenticationProfiles>
          <HttpAuth>
             <HttpAuthParams>
-               <User>bsitest</User>
-               <Password>bsitest</Password>
+               <User>admin</User>
+               <Password>initpass</Password>
             </HttpAuthParams>
          </HttpAuth>
       </AuthenticationProfiles>
-    <FilePath>http://192.168.206.37/contents/IMAGE.jpg</FilePath>
-    <ColorMode>Mono</ColorMode>
-    <PaperSize>Letter</PaperSize>
+    <FilePath>%%FILEPATH%%</FilePath>
+    <ColorMode>Color</ColorMode>
+    <PaperSize>A4</PaperSize>
     <NumCopies>1</NumCopies>
     <FeedTray>Auto</FeedTray>
+    <JobFinAckUrl>./list.xml</JobFinAckUrl>
   </IoDirectPrint>
   <DisplayInfo>
     <Script><![CDATA[

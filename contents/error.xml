@@ -1,0 +1,14 @@
+<SerioCommands version="1.0">
+ <DisplayInfo>
+  <Script> 
+   <UiScreen>
+    <Title></Title>
+    <IoScreen>
+     <IoObject>
+      <Message>Error!!</Message>
+     </IoObject>
+    </IoScreen>
+   </UiScreen>
+  </Script> 
+ </DisplayInfo>
+</SerioCommands>

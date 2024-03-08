@@ -50,7 +50,7 @@ def scan_for_device(target_uuid):
                 print("")
                 return dev
         count+=1
-        if count > 60:
+        if count > 120:
             return None 
 
 def await_advert(eid_key):

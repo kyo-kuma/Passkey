@@ -91,8 +91,8 @@ def encode_qr_contents(compressed_public_key, qr_secret):
         #2: len("assignedTunnelServerDomains"),  # Placeholder for actual value
         2: 2,  # Placeholder for actual value
         3: int(time.time()),
-        4: True,
-        #4: False,
+        #4: True, # memorize passkey
+        4: False,
         5: 'ga',
     })
 

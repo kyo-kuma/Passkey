@@ -10,7 +10,7 @@
                </Operations>
                <IoScreen>
                   <IoObject>
-                     <Title>QRCode Title</Title>
+                     <Title>Passkey Print</Title>
                      <Img qrtext="XXX" qrvertion="40" qrclevel="H">Please Scan Code</Img>
                   </IoObject>
                </IoScreen>
