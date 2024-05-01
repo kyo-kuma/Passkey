@@ -29,15 +29,17 @@ warnings.filterwarnings('ignore')
 #initial_url = "https://apbil2022000.ap.brothergroup.net:3443/"
 #options_url = "https://apbil2022000.ap.brothergroup.net:3443/assertion/options"
 #result_url = "https://apbil2022000.ap.brothergroup.net:3443/assertion/result"
-initial_url = "https://apbil2039025.ap.brothergroup.net:3000/"
-options_url = "https://apbil2039025.ap.brothergroup.net:3000/assertion/options"
-result_url = "https://apbil2039025.ap.brothergroup.net:3000/assertion/result"
+initial_url = "https://apbil1236762:3443/"
+options_url = "https://apbil1236762:3443/assertion/options"
+result_url = "https://apbil1236762:3443/assertion/result"
 
 identity_key = None
 options = None
 client_data_json = None
 session = None
-is_success = False
+auth_response = ""
+#username = "raspberry"
+username = ""
 
 assigned_tunnel_server_domains = ["cable.ua5v.com", "cable.auth.com"]
 tunnel_server_domain = ""
@@ -137,7 +139,7 @@ def connect_to_phone(advert_plaintext, qr_secret):
 
     ws = websocket.WebSocket()
     ws.connect(connect_url, subprotocols=[subprotocol], sslopt={"cert_reqs": ssl.CERT_NONE},
-                 http_proxy_host="10.150.1.211", http_proxy_port="10090", proxy_type="http"
+                 #http_proxy_host="10.150.1.211", http_proxy_port="10090", proxy_type="http"
                )
 
     if ws.subprotocol != subprotocol:
@@ -391,6 +393,8 @@ def send_ctap2_request(conn, handshake_hash):
             if response is not None:
                 send_authentication_results(response, session)
                 break
+            else:
+                print("decode error!")
             try:
                 conn.write(bytes([TYPE_SHUTDOWN]))
             except OSError:
@@ -408,15 +412,16 @@ def get_authentication_options():
     global options
     global client_data_json
     global session
+    global username
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
-    post_data = {"username": "", "user_verification": "preferred"}
+    post_data = {"username": username, "user_verification": "preferred"}
 
     session = requests.Session()
-    session.proxies = {
-      'https': '10.150.1.211:10090',
-      'http': '10.150.1.211:10090',
-    }
+#    session.proxies = {
+#      'https': '10.150.1.211:10090',
+#      'http': '10.150.1.211:10090',
+#    }
     response = session.get(initial_url, verify=False)  # 証明書検証を無視 
 
     headers = {'Content-Type': 'application/json'}
@@ -430,7 +435,8 @@ def get_authentication_options():
     #return options, client_data_json, session
 
 def send_authentication_results(datajson, session):
-    global is_success
+    global auth_response
+    print("send_authentication_results")
     requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
     post_data = datajson
@@ -443,7 +449,7 @@ def send_authentication_results(datajson, session):
     print("HTTP Status:", response_post.status_code)
     print("Response Body:", response_post.text)
     if response_post.status_code == 200:
-        is_success = True
+        auth_response = response_post.text
 
     return
 
@@ -453,7 +459,7 @@ def webauthn_options_to_cbor(options_response):
     client_data = {
         'type': 'webauthn.get',
         'challenge': options['challenge'],
-        'origin': "https://"+options['rpId']+":3000",
+        'origin': "https://"+options['rpId']+":3443",
         #'origin': "https://"+options['rpId'],
         'crossOrigin': False
     }
@@ -492,8 +498,14 @@ def webauthn_options_to_cbor(options_response):
 
 def decode_data(cbor, client_data_json):
     msg = cbor2.loads(bytes.fromhex(cbor[2:]))
-    print("msg[4]['id']")
-    print(msg[4]['id'].decode())
+    print(msg)
+    print(type(msg))
+    if 4 in msg:
+        print("msg[4]['id']")
+        print(msg[4]['id'].decode())
+        user_handle = msg[4]['id'].decode()
+    else:
+        user_handle = ""
 
     response_data = {
         'id': base64.b64encode(msg[1]['id']).decode().replace('=', '').replace('/', '_').replace('+', '-'),
@@ -502,7 +514,7 @@ def decode_data(cbor, client_data_json):
             "authenticatorData": base64.b64encode(msg[2]).decode().replace('=', '').replace('+', '-').replace('/', '_'),
             "clientDataJSON": base64.b64encode(client_data_json.encode()).decode().replace('=', '').replace('+', '-').replace('/', '_'),
             "signature": base64.b64encode(msg[3]).decode().replace('=', '').replace('+', '-').replace('/', '_'),
-            "userHandle": msg[4]['id'].decode()
+            "userHandle": user_handle
         },
         "type": "public-key",
         "clientExtensionResults": {},
@@ -513,13 +525,13 @@ def decode_data(cbor, client_data_json):
 
 def connect(_identity_key, qr_secret, advert_plaintxt):
     global identity_key
-    global is_success
-    is_success = False
+    global auth_response
+    auth_response = ""
     identity_key = _identity_key
     thread = threading.Thread(target=get_authentication_options)
     thread.start()
     connect_to_phone(bytes.fromhex(advert_plaintxt), qr_secret)
-    return is_success
+    return auth_response, username
 
 #identity_key, qr_secret, advert_plaintxt = load_identity_key_and_qr_secret_and_advert_plaintxt("identity_key.pem", "qr_secret.bin", "advert_plaintxt.txt")
 #peer_public_key = None

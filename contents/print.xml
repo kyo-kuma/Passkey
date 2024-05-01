@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SerioCommands version="1.0">
   <IoDirectPrint>
-  <AuthenticationProfiles>
-         <HttpAuth>
-            <HttpAuthParams>
-               <User>admin</User>
-               <Password>initpass</Password>
-            </HttpAuthParams>
-         </HttpAuth>
-      </AuthenticationProfiles>
     <FilePath>%%FILEPATH%%</FilePath>
     <ColorMode>Color</ColorMode>
     <PaperSize>A4</PaperSize>

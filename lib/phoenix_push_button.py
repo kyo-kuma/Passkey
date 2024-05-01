@@ -16,10 +16,17 @@ username = 'admin'
 
 def get_token(ip, password):
     token_url='https://'+ip+'/phoenix/approval/token?application=remotepanel'
+    print(token_url)
     # POSTリクエストの送信
     try:
         # 証明書検証をオフにしてリクエストを送信
-        response = requests.post(token_url, data=None, auth=HTTPDigestAuth(username, password), verify=False)
+        session = requests.Session()
+        session.proxies = {
+#          'https': '10.150.1.211:10090',
+#          'http': '10.150.1.211:10090',
+        }
+        #response = requests.post(token_url, data=None, auth=HTTPDigestAuth(username, password), verify=False)
+        response = session.post(token_url, data=None, auth=HTTPDigestAuth(username, password), verify=False)
         
         # レスポンスを確認
         if response.status_code == 200:
@@ -39,7 +46,12 @@ def down(ip, password, token):
     }
     try:
         # 証明書検証をオフにしてリクエストを送信
-        response = requests.post(down_url, headers=headers, data=None, auth=HTTPDigestAuth(username, password), verify=False)
+        session = requests.Session()
+        session.proxies = {
+#          'https': '10.150.1.211:10090',
+#          'http': '10.150.1.211:10090',
+        }
+        response = session.post(down_url, headers=headers, data=None, auth=HTTPDigestAuth(username, password), verify=False)
         
         # レスポンスを確認
         if response.status_code == 200:
@@ -55,25 +67,12 @@ def up(ip, password, token):
     }
     try:
         # 証明書検証をオフにしてリクエストを送信
-        response = requests.post(up_url, headers=headers, data=None, auth=HTTPDigestAuth(username, password), verify=False)
-        
-        # レスポンスを確認
-        if response.status_code == 200:
-            print("Success!")
-    except requests.exceptions.RequestException as e:
-        print("Request failed:", e)
-
-def down_and_up(ip, password, token):
-    down_url='https://'+ip+'/phoenix/approval/remote_panel?lcd_x=725&lcd_y=441&direction=down'
-    up_url='https://'+ip+'/phoenix/approval/remote_panel?lcd_x=725&lcd_y=441&direction=up'
-    # POSTリクエストの送信
-    headers = {
-        'X-Mfp-Approval-Token': token,
-    }
-    try:
-        # 証明書検証をオフにしてリクエストを送信
-        response = requests.post(down_url, headers=headers, data=None, auth=HTTPDigestAuth(username, password), verify=False)
-        response = requests.post(up_url, headers=headers, data=None, auth=HTTPDigestAuth(username, password), verify=False)
+        session = requests.Session()
+        session.proxies = {
+#          'https': '10.150.1.211:10090',
+#          'http': '10.150.1.211:10090',
+        }
+        response = session.post(up_url, headers=headers, data=None, auth=HTTPDigestAuth(username, password), verify=False)
         
         # レスポンスを確認
         if response.status_code == 200:

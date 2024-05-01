@@ -10,7 +10,9 @@ from urllib.parse import urlparse
 from urllib.parse import parse_qs
 import requests
 import lib.phoenix_push_button
+import lib.dns
 import threading
+import json
 
 dl_url = ""
 is_error = False
@@ -18,9 +20,9 @@ is_error = False
 ip = ""
 password = "5VXUsWAa"
 job_dict = {
-        "IMAGE.jpg": "http://10.150.1.26/contents/IMAGE.jpg", 
-        "test.pdf": "http://10.150.1.148:10090/test.pdf", 
-        "3.pdf": "http://3.pdf",
+#        "IMAGE.jpg": "http://10.150.1.26/contents/IMAGE.jpg", 
+#        "Test2.pdf": "http://10.150.1.26/contents/Test2.pdf", 
+#        "3.pdf": "http://3.pdf",
         }
 item_placeholder = "%%ITEMS%%"
 item_base = '''
@@ -30,9 +32,6 @@ item_base = '''
 ''' + item_placeholder
 
 class RequestHandler(SimpleHTTPRequestHandler, object):
-    def print_info(self):
-        self.log_message("%s %s\n%s", self.command, self.path, self.headers)
-
     def do_GET(self):
         global is_error
         global ip
@@ -41,7 +40,6 @@ class RequestHandler(SimpleHTTPRequestHandler, object):
             params = parse_qs(parsed.query)
             idx = parsed.query.find("=")
             ip = parsed.query[idx+1:]
-            print(ip)
             path = parsed.path
         else:
             path = self.path
@@ -80,26 +78,35 @@ class RequestHandler(SimpleHTTPRequestHandler, object):
 
         if "QR.xml" in path:
             token_list = [None] * 1
-            thread_token = threading.Thread(target=get_token, args=(ip, password, token_list))
+            thread_token = threading.Thread(target=get_phoenix_token, args=(ip, password, token_list))
             thread_token.start()
 
             try:
+                # BLE advertise 開始
                 advert_txt = ble_advertise.advertise(qr_secret)
                 thread_token.join()
-                print("token!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 token = token_list[0]
-                print(token)
                 thread = threading.Thread(target=lib.phoenix_push_button.up, args=(ip, password, token))
                 thread.start()
                 if advert_txt is not None:
-                    result = websocket_tunnel.connect(identity_key, qr_secret, advert_txt)
-                    if result == False:
+                    # Websocketトンネリング開始
+                    response, username = websocket_tunnel.connect(identity_key, qr_secret, advert_txt)
+                    if response == "":
                         is_error = True
+                        return
+                    # JobList取得
+                    token, username = get_username_token(response)
+                    print(username)
+                    print(token)
+                    get_job_list(username, token)
                 else:
                     is_error = True
                 print("complete!!!!!!!!!!!!!")
             except:
+                is_error = True
                 lib.phoenix_push_button.up(ip, password, token)
+
+
 
     def do_POST(self):
         enc = sys.getfilesystemencoding()
@@ -129,11 +136,55 @@ class RequestHandler(SimpleHTTPRequestHandler, object):
 
         self.do_GET()
 
-def get_token(ip, password, token):
+def get_phoenix_token(ip, password, token):
     token[0] = lib.phoenix_push_button.get_token(ip, password)
     lib.phoenix_push_button.down(ip, password, token[0])
 
+def get_job_list(username, token):
+    #url='https://apbil2022000.ap.brothergroup.net:3443/print/jobs?username=' + username
+    url='https://apbil1236762:3443/print/jobs?username=' + username
+    headers = {
+        'Authorization': 'Bearer '+token,
+    }
+    print("url:")
+    print(url)
+    print("headers:")
+    print(headers)
+    try:
+        # 証明書検証をオフにしてリクエストを送信
+        session = requests.Session()
+        session.proxies = {
+#          'https': '10.150.1.211:10090',
+#          'http': '10.150.1.211:10090',
+        }
+        response = session.get(url, headers=headers, verify=False)
+        
+        # レスポンスを確認
+        if response.status_code == 200:
+            print("Success!")
+            response_json = json.loads(response.text)
+            print(response_json)
+            if response_json["job_info"]["jobs"] is not None:
+                for job in response_json["job_info"]["jobs"]:
+                    print(job)
+                    job_dict[job["job_name"]] = urllib.parse.quote(job["job_url"], safe=':/')
 
+            print(job_dict)
+            return
+    except requests.exceptions.RequestException as e:
+        print("Request failed:", e)
+
+def get_username_token(response):
+    response_json = json.loads(response)
+    username = ""
+    if "username"  in response_json:
+        username = response_json["username"]
+    if "token"  in response_json:
+        token = response_json["token"]
+    return token, username
+
+thread_dns = threading.Thread(target=lib.dns.start)
+thread_dns.start()
 
 httpd = HTTPServer(("", 80), RequestHandler)
 httpd.serve_forever()
@@ -144,3 +195,9 @@ httpd.serve_forever()
 #print(token)
 #lib.phoenix_push_button.down(ip, password, token)
 #lib.phoenix_push_button.up(ip, password, token)
+
+
+
+
+ 
+
